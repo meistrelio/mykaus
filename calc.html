@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator — Windows 11 Fluent Edition</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* =========================================================================
+       WINDOWS 11 FLUENT DESIGN TOKENS (DARK & LIGHT MICA THEMES)
+       ========================================================================= */
+    :root[data-theme="dark"] {
+      --desktop-bg: radial-gradient(circle at 20% 20%, #1a2c42 0%, #0f1722 45%, #090d14 100%);
+      --mica-bg: rgba(32, 32, 32, 0.86);
+      --mica-solid: #202020;
+      --drawer-bg: rgba(40, 40, 40, 0.94);
+      --btn-num: #3B3B3B;
+      --btn-num-hover: #323232;
+      --btn-num-active: #282828;
+      --btn-op: #323232;
+      --btn-op-hover: #3B3B3B;
+      --btn-op-active: #282828;
+      --btn-accent: #76B9ED;
+      --btn-accent-hover: #69A7D6;
+      --btn-accent-active: #5C94BF;
+      --btn-accent-text: #000000;
+      --text-primary: #FFFFFF;
+      --text-secondary: #A6A6A6;
+      --text-disabled: #666666;
+      --border-window: rgba(255, 255, 255, 0.09);
+      --border-btn: rgba(255, 255, 255, 0.05);
+      --hover-subtle: rgba(255, 255, 255, 0.06);
+      --active-pill: #76B9ED;
+      --input-bg: #2B2B2B;
+      --shadow-window: 0 28px 70px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    :root[data-theme="light"] {
+      --desktop-bg: radial-gradient(circle at 20% 20%, #d8e9fa 0%, #e9f1f9 50%, #dce6f2 100%);
+      --mica-bg: rgba(243, 243, 243, 0.88);
+      --mica-solid: #F3F3F3;
+      --drawer-bg: rgba(249, 249, 249, 0.96);
+      --btn-num: #FFFFFF;
+      --btn-num-hover: #F9F9F9;
+      --btn-num-active: #F2F2F2;
+      --btn-op: #F9F9F9;
+      --btn-op-hover: #F2F2F2;
+      --btn-op-active: #EAEAEA;
+      --btn-accent: #005FB8;
+      --btn-accent-hover: #186EC0;
+      --btn-accent-active: #317EC8;
+      --btn-accent-text: #FFFFFF;
+      --text-primary: #1A1A1A;
+      --text-secondary: #5D5D5D;
+      --text-disabled: #A0A0A0;
+      --border-window: rgba(0, 0, 0, 0.09);
+      --border-btn: rgba(0, 0, 0, 0.06);
+      --hover-subtle: rgba(0, 0, 0, 0.05);
+      --active-pill: #005FB8;
+      --input-bg: #FFFFFF;
+      --shadow-window: 0 24px 60px rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--desktop-bg);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      transition: background 0.3s ease;
+    }
+
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Main Fluent Window */
+    #calc-window {
+      width: 100%;
+      max-width: 820px;
+      height: 620px;
+      max-height: 94vh;
+      background: var(--mica-bg);
+      backdrop-filter: blur(32px) saturate(160%);
+      -webkit-backdrop-filter: blur(32px) saturate(160%);
+      border-radius: 8px;
+      box-shadow: var(--shadow-window);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #calc-window.maximized {
+      max-width: 100vw;
+      width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+    }
+
+    #calc-window.minimized {
+      height: 36px;
+      overflow: hidden;
+    }
+
+    /* Windows 11 Button Styles */
+    .win-btn {
+      border-radius: 5px;
+      border: 1px solid var(--border-btn);
+      font-size: 15px;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.08s ease, transform 0.05s ease;
+      position: relative;
+    }
+
+    .win-btn-num {
+      background-color: var(--btn-num);
+      color: var(--text-primary);
+      font-size: 18px;
+      font-weight: 500;
+    }
+    .win-btn-num:hover:not(:disabled) { background-color: var(--btn-num-hover); }
+    .win-btn-num:active:not(:disabled), .win-btn-num.kbd-active {
+      background-color: var(--btn-num-active);
+      transform: scale(0.985);
+    }
+
+    .win-btn-op {
+      background-color: var(--btn-op);
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+    .win-btn-op:hover:not(:disabled) { background-color: var(--btn-op-hover); }
+    .win-btn-op:active:not(:disabled), .win-btn-op.kbd-active {
+      background-color: var(--btn-op-active);
+      transform: scale(0.985);
+    }
+
+    .win-btn-accent {
+      background-color: var(--btn-accent);
+      color: var(--btn-accent-text);
+      font-size: 19px;
+      font-weight: 500;
+    }
+    .win-btn-accent:hover:not(:disabled) { background-color: var(--btn-accent-hover); }
+    .win-btn-accent:active:not(:disabled), .win-btn-accent.kbd-active {
+      background-color: var(--btn-accent-active);
+      transform: scale(0.985);
+    }
+
+    .win-btn:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+
+    /* Titlebar Window Controls */
+    .caption-btn {
+      width: 46px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-primary);
+      transition: background-color 0.12s ease, color 0.12s ease;
+    }
+    .caption-btn:hover { background-color: var(--hover-subtle); }
+    .caption-btn.close-btn:hover {
+      background-color: #C42B1C;
+      color: #FFFFFF;
+    }
+
+    /* Subtle Hover & Nav Items */
+    .fluent-icon-btn {
+      border-radius: 4px;
+      transition: background-color 0.12s ease;
+    }
+    .fluent-icon-btn:hover:not(:disabled) {
+      background-color: var(--hover-subtle);
+    }
+    .fluent-icon-btn:disabled {
+      color: var(--text-disabled);
+      cursor: default;
+    }
+
+    /* Active Indicator Pill */
+    .nav-item.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 3px;
+      border-radius: 99px;
+      background-color: var(--active-pill);
+    }
+
+    .tab-underline {
+      position: relative;
+    }
+    .tab-underline.active::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 4px;
+      right: 4px;
+      height: 2.5px;
+      border-radius: 99px;
+      background-color: var(--active-pill);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(130, 130, 130, 0.35);
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(130, 130, 130, 0.55); }
+
+    /* Form Controls in Date & Converter modes */
+    .win-input, .win-select {
+      background: var(--input-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border-window);
+      border-bottom: 1.5px solid var(--text-secondary);
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .win-input:focus, .win-select:focus {
+      border-bottom: 2px solid var(--active-pill);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Banner -->
+  <div id="win-toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 px-3.5 py-1.5 rounded-md text-xs font-medium shadow-lg opacity-0 pointer-events-none transition-opacity duration-200" style="background: var(--drawer-bg); border: 1px solid var(--border-window); color: var(--text-primary);">
+    Notification
+  </div>
+
+  <!-- =======================================================================
+       WINDOWS 11 CALCULATOR APPLICATION WINDOW
+       ======================================================================= -->
+  <div id="calc-window">
+
+    <!-- 1. TITLE BAR -->
+    <header class="h-8 flex items-center justify-between pl-3 shrink-0 select-none">
+      <div class="flex items-center gap-2.5">
+        <!-- Fluent Calculator App Icon -->
+        <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="2" width="18" height="20" rx="3" fill="#0078D4"/>
+          <rect x="6" y="5" width="12" height="4" rx="1" fill="#9CEBFF"/>
+          <circle cx="7.5" cy="12.5" r="1.1" fill="#FFFFFF"/>
+          <circle cx="12" cy="12.5" r="1.1" fill="#FFFFFF"/>
+          <circle cx="16.5" cy="12.5" r="1.1" fill="#50E6FF"/>
+          <circle cx="7.5" cy="16.5" r="1.1" fill="#FFFFFF"/>
+          <circle cx="12" cy="16.5" r="1.1" fill="#FFFFFF"/>
+          <rect x="15.4" y="15.4" width="2.2" height="3.8" rx="0.8" fill="#50E6FF"/>
+        </svg>
+        <span class="text-xs font-normal tracking-tight opacity-90">Calculator</span>
+      </div>
+
+      <!-- Right Titlebar Tools + Window Controls -->
+      <div class="flex items-center h-full">
+        <!-- Theme Toggle Button -->
+        <button onclick="toggleTheme()" title="Switch Light / Dark Mica Theme" class="h-7 px-2 mr-1 rounded text-[11px] flex items-center gap-1 fluent-icon-btn" style="color: var(--text-secondary);">
+          <span id="theme-icon">☀️</span>
+          <span id="theme-label" class="hidden sm:inline">Light</span>
+        </button>
+
+        <!-- Caption Buttons: Minimize, Maximize, Close -->
+        <button onclick="toggleMinimize()" title="Minimize" class="caption-btn" aria-label="Minimize">
+          <svg class="w-3 h-3" viewBox="0 0 12 12"><line x1="2" y1="6" x2="10" y2="6" stroke="currentColor" stroke-width="1.1"/></svg>
+        </button>
+        <button onclick="toggleMaximize()" title="Maximize / Restore" class="caption-btn" aria-label="Maximize">
+          <svg id="max-icon" class="w-3 h-3" viewBox="0 0 12 12"><rect x="2.2" y="2.2" width="7.6" height="7.6" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>
+        </button>
+        <button onclick="closeWindow()" title="Close" class="caption-btn close-btn" aria-label="Close">
+          <svg class="w-3 h-3" viewBox="0 0 12 12"><path d="M2.2 2.2L9.8 9.8M9.8 2.2L2.2 9.8" stroke="currentColor" stroke-width="1.15"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 2. NAVIGATION DRAWER OVERLAY (SLIDE-OUT PANE) -->
+    <div id="nav-backdrop" onclick="toggleDrawer(false)" class="hidden absolute inset-0 top-8 z-30 bg-black/25 backdrop-blur-[1px]"></div>
+    <aside id="nav-drawer" class="absolute top-8 bottom-0 left-0 w-64 z-40 transform -translate-x-full transition-transform duration-200 ease-out flex flex-col justify-between py-2 px-1.5 shadow-2xl" style="background: var(--drawer-bg); border-right: 1px solid var(--border-window);">
+      <div class="overflow-y-auto space-y-0.5">
+        <div class="px-3 py-2 flex items-center gap-3">
+          <button onclick="toggleDrawer(false)" class="p-1.5 fluent-icon-btn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+          <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--text-secondary);">Calculator</span>
+        </div>
+
+        <button onclick="selectMode('standard')" data-mode="standard" class="nav-item active relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm fluent-icon-btn text-left">
+          <span class="w-4 text-center text-xs font-mono">±</span>
+          <span>Standard</span>
+        </button>
+        <button onclick="selectMode('scientific')" data-mode="scientific" class="nav-item relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm fluent-icon-btn text-left">
+          <span class="w-4 text-center text-xs font-mono">ƒx</span>
+          <span>Scientific</span>
+        </button>
+        <button onclick="selectMode('programmer')" data-mode="programmer" class="nav-item relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm fluent-icon-btn text-left">
+          <span class="w-4 text-center text-xs font-mono">&lt;/&gt;</span>
+          <span>Programmer</span>
+        </button>
+        <button onclick="selectMode('date')" data-mode="date" class="nav-item relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm fluent-icon-btn text-left">
+          <span class="w-4 text-center text-xs">📅</span>
+          <span>Date Calculation</span>
+        </button>
+
+        <div class="px-3.5 pt-3 pb-1 text-xs font-semibold" style="color: var(--text-secondary);">Converter</div>
+
+        <button onclick="selectMode('currency')" data-mode="currency" class="nav-item relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm fluent-icon-btn text-left">
+          <span class="w-4 text-center text-xs">💱</span>
+          <span>Currency</span>
+        </button>
+        <button onclick="selectMode('length')" data-mode="length" class="nav-item relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm fluent-icon-btn text-left">
+          <span class="w-4 text-center text-xs">📏</span>
+          <span>Length</span>
+        </button>
+        <button onclick="selectMode('weight')" data-mode="weight" class="nav-item relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm fluent-icon-btn text-left">
+          <span class="w-4 text-center text-xs">⚖️</span>
+          <span>Weight and Mass</span>
+        </button>
+        <button onclick="selectMode('temperature')" data-mode="temperature" class="nav-item relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm fluent-icon-btn text-left">
+          <span class="w-4 text-center text-xs">🌡️</span>
+          <span>Temperature</span>
+        </button>
+        <button onclick="selectMode('data')" data-mode="data" class="nav-item relative w-full flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm fluent-icon-btn text-left">
+          <span class="w-4 text-center text-xs">💾</span>
+          <span>Data</span>
+        </button>
+      </div>
+
+      <div class="pt-2 border-t px-2" style="border-color: var(--border-window);">
+        <button onclick="toggleTheme(); toggleDrawer(false);" class="w-full flex items-center gap-3 px-3 py-2 rounded-md text-xs fluent-icon-btn">
+          <span>🎨</span>
+          <span>Toggle Dark / Light Theme</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 3. MAIN WORKSPACE (LEFT CALCULATOR AREA + RIGHT HISTORY/MEMORY PANE) -->
+    <div class="flex-1 flex overflow-hidden relative">
+
+      <!-- LEFT / PRIMARY CALCULATION VIEWPORT -->
+      <div class="flex-1 flex flex-col min-w-0 px-3 pb-3">
+
+        <!-- Sub-Header (Hamburger + Mode Title + Mobile History Toggle) -->
+        <div class="h-11 flex items-center justify-between shrink-0">
+          <div class="flex items-center gap-2">
+            <button onclick="toggleDrawer(true)" title="Open Navigation (Alt+M)" class="w-9 h-9 flex items-center justify-center fluent-icon-btn">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                <path stroke-linecap="round" d="M4 7h16M4 12h16M4 17h16"/>
+              </svg>
+            </button>
+            <h1 id="mode-title" class="text-lg font-semibold tracking-tight">Standard</h1>
+          </div>
+
+          <!-- Keep-on-top / Mobile History Flyout Trigger -->
+          <div class="flex items-center gap-1">
+            <button id="mobile-history-btn" onclick="toggleSidePanelMobile()" title="History & Memory" class="md:hidden w-9 h-9 flex items-center justify-center fluent-icon-btn">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- =================================================================
+             VIEW A: STANDARD / SCIENTIFIC / PROGRAMMER DISPLAY & KEYPAD
+             ================================================================= -->
+        <div id="view-calculator" class="flex-1 flex flex-col min-h-0">
+
+          <!-- Expression & Primary Readout -->
+          <div class="px-2 pt-1 pb-2 flex flex-col items-end justify-end shrink-0">
+            <div id="calc-expression" class="text-xs sm:text-sm min-h-[20px] truncate max-w-full tabular" style="color: var(--text-secondary);"></div>
+            <div id="calc-display" onclick="copyCurrentDisplay()" title="Click to copy value" class="text-4xl sm:text-[44px] leading-tight font-semibold tracking-tight truncate max-w-full cursor-pointer tabular mt-0.5">0</div>
+          </div>
+
+          <!-- PROGRAMMER RADIX READOUTS (Hidden unless Programmer mode) -->
+          <div id="prog-radix-panel" class="hidden mb-2 space-y-0.5 text-xs font-mono tabular shrink-0">
+            <button onclick="setProgRadix('HEX')" id="radix-row-HEX" class="w-full flex items-center gap-3 px-2 py-1 rounded fluent-icon-btn text-left relative">
+              <span class="w-8 font-semibold" style="color: var(--text-secondary);">HEX</span>
+              <span id="prog-val-HEX" class="truncate">0</span>
+            </button>
+            <button onclick="setProgRadix('DEC')" id="radix-row-DEC" class="w-full flex items-center gap-3 px-2 py-1 rounded fluent-icon-btn text-left relative active">
+              <span class="w-8 font-semibold" style="color: var(--active-pill);">DEC</span>
+              <span id="prog-val-DEC" class="truncate font-semibold">0</span>
+            </button>
+            <button onclick="setProgRadix('OCT')" id="radix-row-OCT" class="w-full flex items-center gap-3 px-2 py-1 rounded fluent-icon-btn text-left relative">
+              <span class="w-8 font-semibold" style="color: var(--text-secondary);">OCT</span>
+              <span id="prog-val-OCT" class="truncate">0</span>
+            </button>
+            <button onclick="setProgRadix('BIN')" id="radix-row-BIN" class="w-full flex items-center gap-3 px-2 py-1 rounded fluent-icon-btn text-left relative">
+              <span class="w-8 font-semibold" style="color: var(--text-secondary);">BIN</span>
+              <span id="prog-val-BIN" class="truncate">0</span>
+            </button>
+          </div>
+
+          <!-- SCIENTIFIC SUB-TOOLBAR (DEG/RAD, HYP, F-E) -->
+          <div id="sci-subbar" class="hidden flex items-center gap-2 pb-1.5 text-xs font-semibold shrink-0">
+            <button id="btn-deg-rad" onclick="toggleDegRad()" class="px-2.5 py-1 rounded fluent-icon-btn">DEG</button>
+            <button id="btn-hyp" onclick="toggleHyp()" class="px-2.5 py-1 rounded fluent-icon-btn">HYP</button>
+            <button id="btn-fe" onclick="toggleFE()" class="px-2.5 py-1 rounded fluent-icon-btn">F-E</button>
+          </div>
+
+          <!-- PROGRAMMER SUB-TOOLBAR (Bit Width & Bitwise Flyout) -->
+          <div id="prog-subbar" class="hidden flex items-center justify-between pb-1.5 text-xs font-semibold shrink-0 border-b mb-1.5" style="border-color: var(--border-window);">
+            <div class="flex items-center gap-1">
+              <button onclick="cycleWordSize()" id="btn-word-size" class="px-2.5 py-1 rounded fluent-icon-btn font-mono" style="color: var(--active-pill);">QWORD</button>
+              <button onclick="toggleBitwiseMenu()" class="px-2.5 py-1 rounded fluent-icon-btn flex items-center gap-1">
+                <span>Bitwise</span>
+                <span class="text-[10px]">▾</span>
+              </button>
+            </div>
+            <!-- Inline Bitwise Operators -->
+            <div id="bitwise-bar" class="flex items-center gap-1 font-mono text-[11px]">
+              <button onclick="progBitwiseOp('AND')" class="px-1.5 py-1 rounded fluent-icon-btn">AND</button>
+              <button onclick="progBitwiseOp('OR')" class="px-1.5 py-1 rounded fluent-icon-btn">OR</button>
+              <button onclick="progBitwiseOp('XOR')" class="px-1.5 py-1 rounded fluent-icon-btn">XOR</button>
+              <button onclick="progBitwiseOp('NOT')" class="px-1.5 py-1 rounded fluent-icon-btn">NOT</button>
+              <button onclick="progBitwiseOp('NAND')" class="px-1.5 py-1 rounded fluent-icon-btn">NAND</button>
+              <button onclick="progBitwiseOp('NOR')" class="px-1.5 py-1 rounded fluent-icon-btn">NOR</button>
+            </div>
+          </div>
+
+          <!-- MEMORY BAR (MC, MR, M+, M-, MS, M▾) -->
+          <div id="memory-bar" class="grid grid-cols-6 gap-1 pb-1.5 shrink-0">
+            <button id="mem-mc" onclick="memClear()" disabled class="h-7 text-xs font-semibold fluent-icon-btn">MC</button>
+            <button id="mem-mr" onclick="memRecall()" disabled class="h-7 text-xs font-semibold fluent-icon-btn">MR</button>
+            <button onclick="memAdd()" class="h-7 text-xs font-semibold fluent-icon-btn">M+</button>
+            <button onclick="memSub()" class="h-7 text-xs font-semibold fluent-icon-btn">M-</button>
+            <button onclick="memStore()" class="h-7 text-xs font-semibold fluent-icon-btn">MS</button>
+            <button id="mem-m-flyout" onclick="toggleSidePanelMobile('memory')" disabled class="h-7 text-xs font-semibold fluent-icon-btn md:hidden">M▾</button>
+          </div>
+
+          <!-- DYNAMIC KEYPAD GRID CONTAINER -->
+          <div id="keypad-container" class="flex-1 min-h-0">
+            <!-- Injected dynamically for Standard, Scientific, or Programmer -->
+          </div>
+        </div>
+
+        <!-- =================================================================
+             VIEW B: DATE CALCULATION MODE
+             ================================================================= -->
+        <div id="view-date" class="hidden flex-1 overflow-y-auto px-2 py-2 space-y-5">
+          <div>
+            <select id="date-calc-type" onchange="switchDateSubmode(this.value)" class="win-select font-semibold">
+              <option value="diff">Difference between dates</option>
+              <option value="addsub">Add or subtract days</option>
+            </select>
+          </div>
+
+          <!-- Submode 1: Difference between dates -->
+          <div id="date-sub-diff" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs mb-1.5" style="color: var(--text-secondary);">From</label>
+                <input id="date-from" type="date" onchange="calcDateDiff()" class="win-input w-full" />
+              </div>
+              <div>
+                <label class="block text-xs mb-1.5" style="color: var(--text-secondary);">To</label>
+                <input id="date-to" type="date" onchange="calcDateDiff()" class="win-input w-full" />
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <span class="block text-xs mb-1" style="color: var(--text-secondary);">Difference</span>
+              <div id="date-diff-primary" class="text-2xl font-semibold">Same dates</div>
+              <div id="date-diff-days" class="text-sm mt-1" style="color: var(--text-secondary);">0 days</div>
+            </div>
+          </div>
+
+          <!-- Submode 2: Add or subtract days -->
+          <div id="date-sub-addsub" class="hidden space-y-4">
+            <div>
+              <label class="block text-xs mb-1.5" style="color: var(--text-secondary);">From</label>
+              <input id="date-base" type="date" onchange="calcDateAddSub()" class="win-input w-full max-w-xs" />
+            </div>
+
+            <div class="flex items-center gap-6 text-sm">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="date-op" value="add" checked onchange="calcDateAddSub()" class="accent-sky-400" />
+                <span>Add</span>
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="date-op" value="sub" onchange="calcDateAddSub()" class="accent-sky-400" />
+                <span>Subtract</span>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3 max-w-md">
+              <div>
+                <label class="block text-xs mb-1" style="color: var(--text-secondary);">Years</label>
+                <input id="date-add-y" type="number" min="0" value="0" oninput="calcDateAddSub()" class="win-input w-full tabular" />
+              </div>
+              <div>
+                <label class="block text-xs mb-1" style="color: var(--text-secondary);">Months</label>
+                <input id="date-add-m" type="number" min="0" value="0" oninput="calcDateAddSub()" class="win-input w-full tabular" />
+              </div>
+              <div>
+                <label class="block text-xs mb-1" style="color: var(--text-secondary);">Days</label>
+                <input id="date-add-d" type="number" min="0" value="30" oninput="calcDateAddSub()" class="win-input w-full tabular" />
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <span class="block text-xs mb-1" style="color: var(--text-secondary);">Date</span>
+              <div id="date-result-text" class="text-xl font-semibold">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =================================================================
+             VIEW C: CURRENCY & UNIT CONVERTER MODE
+             ================================================================= -->
+        <div id="view-converter" class="hidden flex-1 flex flex-col min-h-0 px-2">
+          <div class="space-y-3 pb-3 shrink-0">
+            <!-- Top Value & Unit -->
+            <div>
+              <div id="conv-val-1" onclick="setActiveConvField(1)" class="text-3xl font-semibold tabular cursor-pointer py-0.5 border-l-2 pl-2" style="border-color: var(--active-pill);">1</div>
+              <select id="conv-unit-1" onchange="convertUnits()" class="win-select mt-1 min-w-[180px]"></select>
+            </div>
+
+            <!-- Bottom Value & Unit -->
+            <div>
+              <div id="conv-val-2" onclick="setActiveConvField(2)" class="text-3xl font-normal tabular cursor-pointer py-0.5 pl-2.5" style="color: var(--text-secondary);">0</div>
+              <select id="conv-unit-2" onchange="convertUnits()" class="win-select mt-1 min-w-[180px]"></select>
+            </div>
+
+            <!-- Currency Rate Info / Editable Rate -->
+            <div id="conv-rate-box" class="hidden text-xs flex flex-wrap items-center gap-2 pt-1" style="color: var(--text-secondary);">
+              <span id="conv-rate-label">1 USD = 0.92 EUR</span>
+              <button onclick="promptCustomRate()" class="underline hover:opacity-80" style="color: var(--active-pill);">Edit rate</button>
+            </div>
+          </div>
+
+          <!-- Converter Numpad -->
+          <div class="flex-1 grid grid-cols-3 gap-1.5 pt-2">
+            <button onclick="convClear()" class="win-btn win-btn-op">CE</button>
+            <button onclick="convBackspace()" class="win-btn win-btn-op">⌫</button>
+            <button onclick="convSwapUnits()" class="win-btn win-btn-op" title="Swap units">⇅</button>
+
+            <button onclick="convInput('7')" class="win-btn win-btn-num">7</button>
+            <button onclick="convInput('8')" class="win-btn win-btn-num">8</button>
+            <button onclick="convInput('9')" class="win-btn win-btn-num">9</button>
+
+            <button onclick="convInput('4')" class="win-btn win-btn-num">4</button>
+            <button onclick="convInput('5')" class="win-btn win-btn-num">5</button>
+            <button onclick="convInput('6')" class="win-btn win-btn-num">6</button>
+
+            <button onclick="convInput('1')" class="win-btn win-btn-num">1</button>
+            <button onclick="convInput('2')" class="win-btn win-btn-num">2</button>
+            <button onclick="convInput('3')" class="win-btn win-btn-num">3</button>
+
+            <button onclick="convNegate()" class="win-btn win-btn-num">+/-</button>
+            <button onclick="convInput('0')" class="win-btn win-btn-num">0</button>
+            <button onclick="convInput('.')" class="win-btn win-btn-num">.</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===================================================================
+           RIGHT SIDE PANEL: HISTORY & MEMORY (DESKTOP DOCKED + MOBILE DRAWER)
+           =================================================================== -->
+      <aside id="side-panel" class="hidden md:flex flex-col w-72 shrink-0 border-l px-3 py-2 z-20" style="border-color: var(--border-window); background: var(--mica-bg);">
+        <!-- Tabs -->
+        <div class="flex items-center justify-between pb-2">
+          <div class="flex items-center gap-5 text-sm font-semibold">
+            <button id="side-tab-history" onclick="switchSideTab('history')" class="tab-underline active py-1 cursor-pointer">History</button>
+            <button id="side-tab-memory" onclick="switchSideTab('memory')" class="tab-underline py-1 cursor-pointer" style="color: var(--text-secondary);">Memory</button>
+          </div>
+          <button onclick="toggleSidePanelMobile()" class="md:hidden p-1 fluent-icon-btn text-xs">✕</button>
+        </div>
+
+        <!-- History List -->
+        <div id="side-content-history" class="flex-1 overflow-y-auto space-y-2 pr-1 pt-2">
+          <p class="text-xs mt-2" style="color: var(--text-secondary);">There's no history yet.</p>
+        </div>
+
+        <!-- Memory List -->
+        <div id="side-content-memory" class="hidden flex-1 overflow-y-auto space-y-2 pr-1 pt-2">
+          <p class="text-xs mt-2" style="color: var(--text-secondary);">There's nothing saved in memory.</p>
+        </div>
+
+        <!-- Clear Trash Footer -->
+        <div class="pt-2 flex justify-end shrink-0">
+          <button id="side-clear-btn" onclick="clearSidePanelContent()" title="Clear" class="w-8 h-8 flex items-center justify-center fluent-icon-btn">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       WINDOWS 11 CALCULATOR JAVASCRIPT ENGINE
+       ======================================================================= -->
+  <script>
+    // ---------- Core State ----------
+    let currentMode = 'standard';
+    let currentInput = '0';
+    let expressionTokens = [];
+    let pendingOperator = null;
+    let previousOperand = null;
+    let waitingForOperand = false;
+    let hasError = false;
+
+    // Scientific state
+    let isSecond = false;
+    let angleUnit = 'DEG'; // DEG or RAD
+    let isHyp = false;
+    let isFE = false;
+
+    // Programmer state
+    let progRadix = 'DEC'; // HEX, DEC, OCT, BIN
+    let progWordSize = 64; // 64 (QWORD), 32 (DWORD), 16 (WORD), 8 (BYTE)
+    let progValue = 0n; // BigInt for exact 64-bit integer arithmetic
+
+    // History & Memory
+    let historyList = [];
+    let memoryStack = [];
+    let activeSideTab = 'history';
+
+    // Converter state
+    let convActiveField = 1;
+    let convRawInput = '1';
+    const UNIT_DATA = {
+      currency: {
+        label: 'Currency',
+        base: 'USD',
+        units: {
+          USD: { name: 'United States - Dollar', rate: 1 },
+          EUR: { name: 'Europe - Euro', rate: 0.92 },
+          GBP: { name: 'United Kingdom - Pound', rate: 0.79 },
+          JPY: { name: 'Japan - Yen', rate: 153.4 },
+          CHF: { name: 'Switzerland - Franc', rate: 0.88 },
+          CAD: { name: 'Canada - Dollar', rate: 1.39 },
+          AUD: { name: 'Australia - Dollar', rate: 1.52 },
+          BTC: { name: 'Crypto - Bitcoin (BTC)', rate: 0.000011 }
+        }
+      },
+      length: {
+        label: 'Length',
+        units: {
+          m: { name: 'Meters', factor: 1 },
+          km: { name: 'Kilometers', factor: 1000 },
+          cm: { name: 'Centimeters', factor: 0.01 },
+          mm: { name: 'Millimeters', factor: 0.001 },
+          mi: { name: 'Miles', factor: 1609.344 },
+          yd: { name: 'Yards', factor: 0.9144 },
+          ft: { name: 'Feet', factor: 0.3048 },
+          in: { name: 'Inches', factor: 0.0254 }
+        }
+      },
+      weight: {
+        label: 'Weight and Mass',
+        units: {
+          kg: { name: 'Kilograms', factor: 1 },
+          g: { name: 'Grams', factor: 0.001 },
+          mg: { name: 'Milligrams', factor: 0.000001 },
+          lb: { name: 'Pounds', factor: 0.45359237 },
+          oz: { name: 'Ounces', factor: 0.02834952 },
+          t: { name: 'Metric Tonnes', factor: 1000 }
+        }
+      },
+      temperature: {
+        label: 'Temperature',
+        units: {
+          C: { name: 'Celsius' },
+          F: { name: 'Fahrenheit' },
+          K: { name: 'Kelvin' }
+        }
+      },
+      data: {
+        label: 'Data',
+        units: {
+          B: { name: 'Bytes', factor: 1 },
+          KB: { name: 'Kilobytes', factor: 1024 },
+          MB: { name: 'Megabytes', factor: 1048576 },
+          GB: { name: 'Gigabytes', factor: 1073741824 },
+          TB: { name: 'Terabytes', factor: 1099511627776 }
+        }
+      }
+    };
+
+    // ---------- Toast & Clipboard ----------
+    function showWinToast(text) {
+      const el = document.getElementById('win-toast');
+      el.textContent = text;
+      el.classList.remove('opacity-0');
+      clearTimeout(window._winToastTimer);
+      window._winToastTimer = setTimeout(() => el.classList.add('opacity-0'), 1800);
+    }
+
+    function copyCurrentDisplay() {
+      const val = document.getElementById('calc-display').textContent;
+      const ta = document.createElement('textarea');
+      ta.value = val.replace(/,/g, '');
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showWinToast('Copied to clipboard');
+    }
+
+    // ---------- Window Controls & Theme ----------
+    function toggleTheme() {
+      const root = document.documentElement;
+      const isDark = root.getAttribute('data-theme') === 'dark';
+      const next = isDark ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').textContent = next === 'dark' ? '☀️' : '🌙';
+      document.getElementById('theme-label').textContent = next === 'dark' ? 'Light' : 'Dark';
+    }
+
+    function toggleMinimize() {
+      const win = document.getElementById('calc-window');
+      win.classList.remove('maximized');
+      win.classList.toggle('minimized');
+    }
+
+    function toggleMaximize() {
+      const win = document.getElementById('calc-window');
+      win.classList.remove('minimized');
+      win.classList.toggle('maximized');
+    }
+
+    function closeWindow() {
+      clearAll();
+      showWinToast('Calculator reset (Window close simulated)');
+    }
+
+    // ---------- Navigation Drawer ----------
+    function toggleDrawer(open) {
+      const drawer = document.getElementById('nav-drawer');
+      const backdrop = document.getElementById('nav-backdrop');
+      if (open) {
+        drawer.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+      } else {
+        drawer.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    function selectMode(mode) {
+      currentMode = mode;
+      toggleDrawer(false);
+
+      // Highlight nav item
+      document.querySelectorAll('.nav-item').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+
+      const titles = {
+        standard: 'Standard',
+        scientific: 'Scientific',
+        programmer: 'Programmer',
+        date: 'Date Calculation',
+        currency: 'Currency',
+        length: 'Length',
+        weight: 'Weight and Mass',
+        temperature: 'Temperature',
+        data: 'Data'
+      };
+      document.getElementById('mode-title').textContent = titles[mode] || 'Standard';
+
+      // Toggle major views
+      const viewCalc = document.getElementById('view-calculator');
+      const viewDate = document.getElementById('view-date');
+      const viewConv = document.getElementById('view-converter');
+      const sidePanel = document.getElementById('side-panel');
+
+      viewCalc.classList.add('hidden');
+      viewDate.classList.add('hidden');
+      viewConv.classList.add('hidden');
+
+      if (mode === 'date') {
+        viewDate.classList.remove('hidden');
+        sidePanel.classList.add('md:hidden');
+        initDateMode();
+      } else if (UNIT_DATA[mode]) {
+        viewConv.classList.remove('hidden');
+        sidePanel.classList.add('md:hidden');
+        initConverterMode(mode);
+      } else {
+        viewCalc.classList.remove('hidden');
+        sidePanel.classList.remove('md:hidden');
+
+        // Configure sub-bars
+        document.getElementById('sci-subbar').classList.toggle('hidden', mode !== 'scientific');
+        document.getElementById('prog-subbar').classList.toggle('hidden', mode !== 'programmer');
+        document.getElementById('prog-radix-panel').classList.toggle('hidden', mode !== 'programmer');
+        document.getElementById('memory-bar').classList.toggle('hidden', mode === 'programmer');
+
+        clearAll();
+        renderKeypad();
+      }
+    }
+
+    // ---------- Number Formatting ----------
+    function formatNumberDisplay(valStr) {
+      if (hasError) return valStr;
+      if (currentMode === 'programmer') {
+        return formatProgrammerString(progValue, progRadix);
+      }
+      if (valStr === '' || valStr === '-') return '0';
+      const num = Number(valStr);
+      if (!isFinite(num)) return valStr;
+
+      if (isFE && currentMode === 'scientific') {
+        return num.toExponential(6).replace('e+', 'e');
+      }
+
+      const parts = valStr.split('.');
+      const intPart = parts[0];
+      const sign = intPart.startsWith('-') ? '-' : '';
+      const digits = intPart.replace('-', '');
+      const formattedInt = sign + digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      return parts.length > 1 ? `${formattedInt}.${parts[1]}` : formattedInt;
+    }
+
+    function updateDisplay() {
+      const disp = document.getElementById('calc-display');
+      const expr = document.getElementById('calc-expression');
+      disp.textContent = formatNumberDisplay(currentInput);
+
+      // Adjust font size dynamically for long numbers
+      const len = disp.textContent.length;
+      if (len > 18) disp.style.fontSize = '24px';
+      else if (len > 13) disp.style.fontSize = '32px';
+      else disp.style.fontSize = '';
+
+      expr.textContent = expressionTokens.join(' ');
+      if (currentMode === 'programmer') updateProgrammerReadouts();
+    }
+
+    // ---------- Standard & Scientific Arithmetic Engine ----------
+    function inputDigit(d) {
+      if (hasError) clearAll();
+      if (currentMode === 'programmer') {
+        inputProgDigit(d);
+        return;
+      }
+      if (waitingForOperand) {
+        currentInput = d;
+        waitingForOperand = false;
+      } else {
+        if (currentInput === '0') currentInput = d;
+        else if (currentInput === '-0') currentInput = '-' + d;
+        else if (currentInput.replace(/[^0-9]/g, '').length < 16) currentInput += d;
+      }
+      updateDisplay();
+    }
+
+    function inputDecimal() {
+      if (hasError) clearAll();
+      if (currentMode === 'programmer') return;
+      if (waitingForOperand) {
+        currentInput = '0.';
+        waitingForOperand = false;
+      } else if (!currentInput.includes('.')) {
+        currentInput += '.';
+      }
+      updateDisplay();
+    }
+
+    function clearEntry() {
+      if (hasError) { clearAll(); return; }
+      currentInput = '0';
+      if (currentMode === 'programmer') progValue = 0n;
+      updateDisplay();
+    }
+
+    function clearAll() {
+      currentInput = '0';
+      expressionTokens = [];
+      pendingOperator = null;
+      previousOperand = null;
+      waitingForOperand = false;
+      hasError = false;
+      progValue = 0n;
+      updateDisplay();
+    }
+
+    function backspace() {
+      if (hasError) { clearAll(); return; }
+      if (waitingForOperand) return;
+      if (currentMode === 'programmer') {
+        const str = formatProgrammerString(progValue, progRadix, false);
+        const trimmed = str.length <= 1 ? '0' : str.slice(0, -1);
+        progValue = parseProgString(trimmed, progRadix);
+        currentInput = trimmed;
+        updateDisplay();
+        return;
+      }
+      if (currentInput.length <= 1 || (currentInput.length === 2 && currentInput.startsWith('-'))) {
+        currentInput = '0';
+      } else {
+        currentInput = currentInput.slice(0, -1);
+      }
+      updateDisplay();
+    }
+
+    function toggleSign() {
+      if (hasError) return;
+      if (currentMode === 'programmer') {
+        progValue = maskWord(-progValue);
+        currentInput = formatProgrammerString(progValue, progRadix, false);
+        updateDisplay();
+        return;
+      }
+      if (currentInput === '0') return;
+      currentInput = currentInput.startsWith('-') ? currentInput.slice(1) : '-' + currentInput;
+      updateDisplay();
+    }
+
+    function setError(msg) {
+      hasError = true;
+      currentInput = msg;
+      expressionTokens = [];
+      pendingOperator = null;
+      previousOperand = null;
+      updateDisplay();
+    }
+
+    function handleOperator(op) {
+      if (hasError) clearAll();
+
+      if (currentMode === 'programmer') {
+        handleProgOperator(op);
+        return;
+      }
+
+      const inputVal = parseFloat(currentInput);
+
+      if (pendingOperator && !waitingForOperand) {
+        const result = computeBinary(previousOperand, inputVal, pendingOperator);
+        if (result === null) return;
+        previousOperand = result;
+        currentInput = String(result);
+        expressionTokens = [formatNumberDisplay(String(result)), op];
+      } else {
+        previousOperand = inputVal;
+        expressionTokens = [formatNumberDisplay(currentInput), op];
+      }
+
+      pendingOperator = op;
+      waitingForOperand = true;
+      updateDisplay();
+    }
+
+    function computeBinary(a, b, op) {
+      let res = 0;
+      switch (op) {
+        case '+': res = a + b; break;
+        case '−':
+        case '-': res = a - b; break;
+        case '×':
+        case '*': res = a * b; break;
+        case '÷':
+        case '/':
+          if (b === 0) { setError('Cannot divide by zero'); return null; }
+          res = a / b;
+          break;
+        case 'mod':
+          if (b === 0) { setError('Cannot divide by zero'); return null; }
+          res = a % b;
+          break;
+        case 'xʸ':
+          res = Math.pow(a, b);
+          break;
+        case 'ʸ√x':
+          if (b === 0) { setError('Invalid input'); return null; }
+          res = Math.pow(a, 1 / b);
+          break;
+        default: res = b;
+      }
+      if (!isFinite(res) || isNaN(res)) {
+        setError('Invalid input');
+        return null;
+      }
+      return Math.round(res * 1e12) / 1e12;
+    }
+
+    function evaluateEquals() {
+      if (hasError) { clearAll(); return; }
+      if (currentMode === 'programmer') {
+        evalProgEquals();
+        return;
+      }
+      if (pendingOperator === null) {
+        const exprStr = `${formatNumberDisplay(currentInput)} =`;
+        addHistoryItem(exprStr, formatNumberDisplay(currentInput), currentInput);
+        expressionTokens = [exprStr];
+        waitingForOperand = true;
+        updateDisplay();
+        return;
+      }
+
+      const b = parseFloat(currentInput);
+      const a = previousOperand;
+      const op = pendingOperator;
+      const fullExpr = `${formatNumberDisplay(String(a))} ${op} ${formatNumberDisplay(String(b))} =`;
+
+      const res = computeBinary(a, b, op);
+      if (res === null) return;
+
+      const resStr = String(res);
+      addHistoryItem(fullExpr, formatNumberDisplay(resStr), resStr);
+
+      currentInput = resStr;
+      expressionTokens = [fullExpr];
+      previousOperand = null;
+      pendingOperator = null;
+      waitingForOperand = true;
+      updateDisplay();
+    }
+
+    // ---------- Unary & Scientific Functions ----------
+    function applyUnary(fn) {
+      if (hasError) clearAll();
+      const x = parseFloat(currentInput);
+      let res = x;
+      let label = '';
+
+      const toRad = (deg) => (deg * Math.PI) / 180;
+      const fromRad = (rad) => (rad * 180) / Math.PI;
+
+      switch (fn) {
+        case '%':
+          res = previousOperand !== null ? previousOperand * (x / 100) : x / 100;
+          label = `${res}`;
+          break;
+        case '1/x':
+          if (x === 0) { setError('Cannot divide by zero'); return; }
+          res = 1 / x;
+          label = `1/(${x})`;
+          break;
+        case 'x²':
+          res = x * x;
+          label = `sqr(${x})`;
+          break;
+        case 'x³':
+          res = x * x * x;
+          label = `cube(${x})`;
+          break;
+        case '√':
+          if (x < 0) { setError('Invalid input'); return; }
+          res = Math.sqrt(x);
+          label = `√(${x})`;
+          break;
+        case '³√':
+          res = Math.cbrt(x);
+          label = `cuberoot(${x})`;
+          break;
+        case '|x|':
+          res = Math.abs(x);
+          label = `abs(${x})`;
+          break;
+        case '10ˣ':
+          res = Math.pow(10, x);
+          label = `10^(${x})`;
+          break;
+        case '2ˣ':
+          res = Math.pow(2, x);
+          label = `2^(${x})`;
+          break;
+        case 'eˣ':
+          res = Math.exp(x);
+          label = `e^(${x})`;
+          break;
+        case 'log':
+          if (x <= 0) { setError('Invalid input'); return; }
+          res = Math.log10(x);
+          label = `log(${x})`;
+          break;
+        case 'ln':
+          if (x <= 0) { setError('Invalid input'); return; }
+          res = Math.log(x);
+          label = `ln(${x})`;
+          break;
+        case 'n!':
+          if (x < 0 || !Number.isInteger(x) || x > 170) { setError('Invalid input'); return; }
+          res = 1;
+          for (let i = 2; i <= x; i++) res *= i;
+          label = `fact(${x})`;
+          break;
+        case 'sin':
+          if (isHyp) {
+            res = isSecond ? Math.asinh(x) : Math.sinh(x);
+            label = `${isSecond ? 'sinh⁻¹' : 'sinh'}(${x})`;
+          } else if (isSecond) {
+            if (x < -1 || x > 1) { setError('Invalid input'); return; }
+            const r = Math.asin(x);
+            res = angleUnit === 'DEG' ? fromRad(r) : r;
+            label = `sin⁻¹(${x})`;
+          } else {
+            const arg = angleUnit === 'DEG' ? toRad(x) : x;
+            res = Math.sin(arg);
+            label = `sin(${x})`;
+          }
+          break;
+        case 'cos':
+          if (isHyp) {
+            res = isSecond ? Math.acosh(x) : Math.cosh(x);
+            label = `${isSecond ? 'cosh⁻¹' : 'cosh'}(${x})`;
+          } else if (isSecond) {
+            if (x < -1 || x > 1) { setError('Invalid input'); return; }
+            const r = Math.acos(x);
+            res = angleUnit === 'DEG' ? fromRad(r) : r;
+            label = `cos⁻¹(${x})`;
+          } else {
+            const arg = angleUnit === 'DEG' ? toRad(x) : x;
+            res = Math.cos(arg);
+            label = `cos(${x})`;
+          }
+          break;
+        case 'tan':
+          if (isHyp) {
+            res = isSecond ? Math.atanh(x) : Math.tanh(x);
+            label = `${isSecond ? 'tanh⁻¹' : 'tanh'}(${x})`;
+          } else if (isSecond) {
+            const r = Math.atan(x);
+            res = angleUnit === 'DEG' ? fromRad(r) : r;
+            label = `tan⁻¹(${x})`;
+          } else {
+            const arg = angleUnit === 'DEG' ? toRad(x) : x;
+            res = Math.tan(arg);
+            label = `tan(${x})`;
+          }
+          break;
+      }
+
+      if (!isFinite(res) || isNaN(res)) {
+        setError('Invalid input');
+        return;
+      }
+      res = Math.round(res * 1e12) / 1e12;
+      currentInput = String(res);
+      if (label) expressionTokens = [label];
+      waitingForOperand = true;
+      updateDisplay();
+    }
+
+    function insertConstant(c) {
+      if (hasError) clearAll();
+      currentInput = c === 'pi' ? String(Math.PI) : String(Math.E);
+      waitingForOperand = false;
+      updateDisplay();
+    }
+
+    function toggleSecond() {
+      isSecond = !isSecond;
+      renderKeypad();
+    }
+
+    function toggleDegRad() {
+      angleUnit = angleUnit === 'DEG' ? 'RAD' : 'DEG';
+      document.getElementById('btn-deg-rad').textContent = angleUnit;
+    }
+
+    function toggleHyp() {
+      isHyp = !isHyp;
+      const btn = document.getElementById('btn-hyp');
+      btn.style.color = isHyp ? 'var(--active-pill)' : '';
+      renderKeypad();
+    }
+
+    function toggleFE() {
+      isFE = !isFE;
+      const btn = document.getElementById('btn-fe');
+      btn.style.color = isFE ? 'var(--active-pill)' : '';
+      updateDisplay();
+    }
+
+    // ---------- Programmer Mode Logic ----------
+    function maskWord(val) {
+      const bits = BigInt(progWordSize);
+      const mask = (1n << bits) - 1n;
+      return BigInt.asIntN(progWordSize, val & mask);
+    }
+
+    function formatProgrammerString(val, radix, grouped = true) {
+      const bits = BigInt(progWordSize);
+      const unsigned = val & ((1n << bits) - 1n);
+      if (radix === 'DEC') {
+        const s = val.toString(10);
+        if (!grouped) return s;
+        const sign = s.startsWith('-') ? '-' : '';
+        return sign + s.replace('-', '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
+      if (radix === 'HEX') {
+        const raw = unsigned.toString(16).toUpperCase();
+        return grouped ? raw.replace(/(.{4})/g, '$1 ').trim() : raw;
+      }
+      if (radix === 'OCT') {
+        const raw = unsigned.toString(8);
+        return grouped ? raw.replace(/(.{3})/g, '$1 ').trim() : raw;
+      }
+      if (radix === 'BIN') {
+        const raw = unsigned.toString(2);
+        return grouped ? raw.replace(/(.{4})/g, '$1 ').trim() : raw;
+      }
+      return '0';
+    }
+
+    function parseProgString(str, radix) {
+      const clean = str.replace(/\s+/g, '');
+      if (!clean || clean === '-') return 0n;
+      try {
+        let parsed = 0n;
+        if (radix === 'DEC') parsed = BigInt(clean);
+        else if (radix === 'HEX') parsed = BigInt('0x' + clean);
+        else if (radix === 'OCT') parsed = BigInt('0o' + clean);
+        else if (radix === 'BIN') parsed = BigInt('0b' + clean);
+        return maskWord(parsed);
+      } catch {
+        return 0n;
+      }
+    }
+
+    function setProgRadix(radix) {
+      progRadix = radix;
+      ['HEX', 'DEC', 'OCT', 'BIN'].forEach(r => {
+        const row = document.getElementById(`radix-row-${r}`);
+        const active = r === radix;
+        row.classList.toggle('active', active);
+        row.querySelector('span').style.color = active ? 'var(--active-pill)' : 'var(--text-secondary)';
+      });
+      currentInput = formatProgrammerString(progValue, progRadix, false);
+      updateDisplay();
+      renderKeypad();
+    }
+
+    function cycleWordSize() {
+      const sizes = [64, 32, 16, 8];
+      const labels = { 64: 'QWORD', 32: 'DWORD', 16: 'WORD', 8: 'BYTE' };
+      const idx = sizes.indexOf(progWordSize);
+      progWordSize = sizes[(idx + 1) % sizes.length];
+      document.getElementById('btn-word-size').textContent = labels[progWordSize];
+      progValue = maskWord(progValue);
+      currentInput = formatProgrammerString(progValue, progRadix, false);
+      updateDisplay();
+    }
+
+    function updateProgrammerReadouts() {
+      document.getElementById('prog-val-HEX').textContent = formatProgrammerString(progValue, 'HEX', true);
+      document.getElementById('prog-val-DEC').textContent = formatProgrammerString(progValue, 'DEC', true);
+      document.getElementById('prog-val-OCT').textContent = formatProgrammerString(progValue, 'OCT', true);
+      document.getElementById('prog-val-BIN').textContent = formatProgrammerString(progValue, 'BIN', true);
+    }
+
+    function inputProgDigit(ch) {
+      const allowed = {
+        BIN: /^[01]$/,
+        OCT: /^[0-7]$/,
+        DEC: /^[0-9]$/,
+        HEX: /^[0-9A-F]$/i
+      };
+      if (!allowed[progRadix].test(ch)) return;
+      const upper = ch.toUpperCase();
+      if (waitingForOperand) {
+        currentInput = upper;
+        waitingForOperand = false;
+      } else {
+        currentInput = currentInput === '0' ? upper : currentInput + upper;
+      }
+      progValue = parseProgString(currentInput, progRadix);
+      updateDisplay();
+    }
+
+    function progBitwiseOp(op) {
+      if (op === 'NOT') {
+        progValue = maskWord(~progValue);
+        currentInput = formatProgrammerString(progValue, progRadix, false);
+        updateDisplay();
+        return;
+      }
+      handleProgOperator(op);
+    }
+
+    function handleProgOperator(op) {
+      if (pendingOperator && !waitingForOperand) {
+        progValue = computeProgBinary(previousOperand, progValue, pendingOperator);
+        currentInput = formatProgrammerString(progValue, progRadix, false);
+      }
+      previousOperand = progValue;
+      pendingOperator = op;
+      expressionTokens = [formatProgrammerString(progValue, progRadix, true), op];
+      waitingForOperand = true;
+      updateDisplay();
+    }
+
+    function computeProgBinary(a, b, op) {
+      let r = 0n;
+      switch (op) {
+        case '+': r = a + b; break;
+        case '−': r = a - b; break;
+        case '×': r = a * b; break;
+        case '÷': r = b === 0n ? 0n : a / b; break;
+        case '%': r = b === 0n ? 0n : a % b; break;
+        case 'AND': r = a & b; break;
+        case 'OR': r = a | b; break;
+        case 'XOR': r = a ^ b; break;
+        case 'NAND': r = ~(a & b); break;
+        case 'NOR': r = ~(a | b); break;
+        case '<<': r = a << (b & 63n); break;
+        case '>>': r = a >> (b & 63n); break;
+        default: r = b;
+      }
+      return maskWord(r);
+    }
+
+    function evalProgEquals() {
+      if (!pendingOperator) return;
+      const res = computeProgBinary(previousOperand, progValue, pendingOperator);
+      const expr = `${formatProgrammerString(previousOperand, progRadix, true)} ${pendingOperator} ${formatProgrammerString(progValue, progRadix, true)} =`;
+      progValue = res;
+      currentInput = formatProgrammerString(progValue, progRadix, false);
+      addHistoryItem(expr, formatProgrammerString(progValue, progRadix, true), currentInput);
+      expressionTokens = [expr];
+      pendingOperator = null;
+      previousOperand = null;
+      waitingForOperand = true;
+      updateDisplay();
+    }
+
+    // ---------- Keypad Renderer ----------
+    function renderKeypad() {
+      const container = document.getElementById('keypad-container');
+
+      if (currentMode === 'standard') {
+        container.innerHTML = `
+          <div class="h-full grid grid-cols-4 gap-1.5">
+            <button data-key="%" onclick="applyUnary('%')" class="win-btn win-btn-op">%</button>
+            <button data-key="Delete" onclick="clearEntry()" class="win-btn win-btn-op">CE</button>
+            <button data-key="Escape" onclick="clearAll()" class="win-btn win-btn-op">C</button>
+            <button data-key="Backspace" onclick="backspace()" class="win-btn win-btn-op" title="Backspace">⌫</button>
+
+            <button onclick="applyUnary('1/x')" class="win-btn win-btn-op">1/x</button>
+            <button onclick="applyUnary('x²')" class="win-btn win-btn-op">x²</button>
+            <button onclick="applyUnary('√')" class="win-btn win-btn-op">²√x</button>
+            <button data-key="/" onclick="handleOperator('÷')" class="win-btn win-btn-op text-lg">÷</button>
+
+            <button data-key="7" onclick="inputDigit('7')" class="win-btn win-btn-num">7</button>
+            <button data-key="8" onclick="inputDigit('8')" class="win-btn win-btn-num">8</button>
+            <button data-key="9" onclick="inputDigit('9')" class="win-btn win-btn-num">9</button>
+            <button data-key="*" onclick="handleOperator('×')" class="win-btn win-btn-op text-lg">×</button>
+
+            <button data-key="4" onclick="inputDigit('4')" class="win-btn win-btn-num">4</button>
+            <button data-key="5" onclick="inputDigit('5')" class="win-btn win-btn-num">5</button>
+            <button data-key="6" onclick="inputDigit('6')" class="win-btn win-btn-num">6</button>
+            <button data-key="-" onclick="handleOperator('−')" class="win-btn win-btn-op text-lg">−</button>
+
+            <button data-key="1" onclick="inputDigit('1')" class="win-btn win-btn-num">1</button>
+            <button data-key="2" onclick="inputDigit('2')" class="win-btn win-btn-num">2</button>
+            <button data-key="3" onclick="inputDigit('3')" class="win-btn win-btn-num">3</button>
+            <button data-key="+" onclick="handleOperator('+')" class="win-btn win-btn-op text-lg">+</button>
+
+            <button onclick="toggleSign()" class="win-btn win-btn-num">+/-</button>
+            <button data-key="0" onclick="inputDigit('0')" class="win-btn win-btn-num">0</button>
+            <button data-key="." onclick="inputDecimal()" class="win-btn win-btn-num">.</button>
+            <button data-key="Enter" onclick="evaluateEquals()" class="win-btn win-btn-accent">=</button>
+          </div>
+        `;
+      } else if (currentMode === 'scientific') {
+        const sinLbl = isHyp ? (isSecond ? 'sinh⁻¹' : 'sinh') : (isSecond ? 'sin⁻¹' : 'sin');
+        const cosLbl = isHyp ? (isSecond ? 'cosh⁻¹' : 'cosh') : (isSecond ? 'cos⁻¹' : 'cos');
+        const tanLbl = isHyp ? (isSecond ? 'tanh⁻¹' : 'tanh') : (isSecond ? 'tan⁻¹' : 'tan');
+
+        container.innerHTML = `
+          <div class="h-full grid grid-cols-5 gap-1">
+            <button onclick="toggleSecond()" class="win-btn win-btn-op" style="${isSecond ? 'background: var(--btn-accent); color: var(--btn-accent-text); font-weight:600;' : ''}">2ⁿᵈ</button>
+            <button onclick="insertConstant('pi')" class="win-btn win-btn-op">π</button>
+            <button onclick="insertConstant('e')" class="win-btn win-btn-op">e</button>
+            <button data-key="Escape" onclick="clearAll()" class="win-btn win-btn-op">C</button>
+            <button data-key="Backspace" onclick="backspace()" class="win-btn win-btn-op">⌫</button>
+
+            <button onclick="applyUnary('${isSecond ? 'x³' : 'x²'}')" class="win-btn win-btn-op">${isSecond ? 'x³' : 'x²'}</button>
+            <button onclick="applyUnary('1/x')" class="win-btn win-btn-op">1/x</button>
+            <button onclick="applyUnary('|x|')" class="win-btn win-btn-op">|x|</button>
+            <button onclick="applyUnary('eˣ')" class="win-btn win-btn-op">exp</button>
+            <button onclick="handleOperator('mod')" class="win-btn win-btn-op">mod</button>
+
+            <button onclick="applyUnary('${isSecond ? '³√' : '√'}')" class="win-btn win-btn-op">${isSecond ? '³√x' : '²√x'}</button>
+            <button onclick="applyUnary('sin')" class="win-btn win-btn-op text-xs">${sinLbl}</button>
+            <button onclick="applyUnary('cos')" class="win-btn win-btn-op text-xs">${cosLbl}</button>
+            <button onclick="applyUnary('n!')" class="win-btn win-btn-op">n!</button>
+            <button data-key="/" onclick="handleOperator('÷')" class="win-btn win-btn-op text-base">÷</button>
+
+            <button onclick="handleOperator('${isSecond ? 'ʸ√x' : 'xʸ'}')" class="win-btn win-btn-op">${isSecond ? 'ʸ√x' : 'xʸ'}</button>
+            <button data-key="7" onclick="inputDigit('7')" class="win-btn win-btn-num">7</button>
+            <button data-key="8" onclick="inputDigit('8')" class="win-btn win-btn-num">8</button>
+            <button data-key="9" onclick="inputDigit('9')" class="win-btn win-btn-num">9</button>
+            <button data-key="*" onclick="handleOperator('×')" class="win-btn win-btn-op text-base">×</button>
+
+            <button onclick="applyUnary('${isSecond ? '2ˣ' : '10ˣ'}')" class="win-btn win-btn-op">${isSecond ? '2ˣ' : '10ˣ'}</button>
+            <button data-key="4" onclick="inputDigit('4')" class="win-btn win-btn-num">4</button>
+            <button data-key="5" onclick="inputDigit('5')" class="win-btn win-btn-num">5</button>
+            <button data-key="6" onclick="inputDigit('6')" class="win-btn win-btn-num">6</button>
+            <button data-key="-" onclick="handleOperator('−')" class="win-btn win-btn-op text-base">−</button>
+
+            <button onclick="applyUnary('log')" class="win-btn win-btn-op">log</button>
+            <button data-key="1" onclick="inputDigit('1')" class="win-btn win-btn-num">1</button>
+            <button data-key="2" onclick="inputDigit('2')" class="win-btn win-btn-num">2</button>
+            <button data-key="3" onclick="inputDigit('3')" class="win-btn win-btn-num">3</button>
+            <button data-key="+" onclick="handleOperator('+')" class="win-btn win-btn-op text-base">+</button>
+
+            <button onclick="applyUnary('ln')" class="win-btn win-btn-op">ln</button>
+            <button onclick="toggleSign()" class="win-btn win-btn-num">+/-</button>
+            <button data-key="0" onclick="inputDigit('0')" class="win-btn win-btn-num">0</button>
+            <button data-key="." onclick="inputDecimal()" class="win-btn win-btn-num">.</button>
+            <button data-key="Enter" onclick="evaluateEquals()" class="win-btn win-btn-accent">=</button>
+          </div>
+        `;
+      } else if (currentMode === 'programmer') {
+        const isHex = progRadix === 'HEX';
+        const isBin = progRadix === 'BIN';
+        const isOct = progRadix === 'OCT';
+
+        container.innerHTML = `
+          <div class="h-full grid grid-cols-5 gap-1">
+            <button ${!isHex ? 'disabled' : ''} onclick="inputDigit('A')" class="win-btn win-btn-num text-sm">A</button>
+            <button onclick="handleProgOperator('<<')" class="win-btn win-btn-op font-mono">&lt;&lt;</button>
+            <button onclick="handleProgOperator('>>')" class="win-btn win-btn-op font-mono">&gt;&gt;</button>
+            <button data-key="Escape" onclick="clearAll()" class="win-btn win-btn-op">C</button>
+            <button data-key="Backspace" onclick="backspace()" class="win-btn win-btn-op">⌫</button>
+
+            <button ${!isHex ? 'disabled' : ''} onclick="inputDigit('B')" class="win-btn win-btn-num text-sm">B</button>
+            <button onclick="progBitwiseOp('NOT')" class="win-btn win-btn-op text-xs">NOT</button>
+            <button onclick="progBitwiseOp('XOR')" class="win-btn win-btn-op text-xs">XOR</button>
+            <button onclick="handleProgOperator('%')" class="win-btn win-btn-op">%</button>
+            <button data-key="/" onclick="handleProgOperator('÷')" class="win-btn win-btn-op">÷</button>
+
+            <button ${!isHex ? 'disabled' : ''} onclick="inputDigit('C')" class="win-btn win-btn-num text-sm">C</button>
+            <button ${isBin ? 'disabled' : ''} data-key="7" onclick="inputDigit('7')" class="win-btn win-btn-num">7</button>
+            <button ${isBin || isOct ? 'disabled' : ''} data-key="8" onclick="inputDigit('8')" class="win-btn win-btn-num">8</button>
+            <button ${isBin || isOct ? 'disabled' : ''} data-key="9" onclick="inputDigit('9')" class="win-btn win-btn-num">9</button>
+            <button data-key="*" onclick="handleProgOperator('×')" class="win-btn win-btn-op">×</button>
+
+            <button ${!isHex ? 'disabled' : ''} onclick="inputDigit('D')" class="win-btn win-btn-num text-sm">D</button>
+            <button ${isBin ? 'disabled' : ''} data-key="4" onclick="inputDigit('4')" class="win-btn win-btn-num">4</button>
+            <button ${isBin ? 'disabled' : ''} data-key="5" onclick="inputDigit('5')" class="win-btn win-btn-num">5</button>
+            <button ${isBin ? 'disabled' : ''} data-key="6" onclick="inputDigit('6')" class="win-btn win-btn-num">6</button>
+            <button data-key="-" onclick="handleProgOperator('−')" class="win-btn win-btn-op">−</button>
+
+            <button ${!isHex ? 'disabled' : ''} onclick="inputDigit('E')" class="win-btn win-btn-num text-sm">E</button>
+            <button data-key="1" onclick="inputDigit('1')" class="win-btn win-btn-num">1</button>
+            <button ${isBin ? 'disabled' : ''} data-key="2" onclick="inputDigit('2')" class="win-btn win-btn-num">2</button>
+            <button ${isBin ? 'disabled' : ''} data-key="3" onclick="inputDigit('3')" class="win-btn win-btn-num">3</button>
+            <button data-key="+" onclick="handleProgOperator('+')" class="win-btn win-btn-op">+</button>
+
+            <button ${!isHex ? 'disabled' : ''} onclick="inputDigit('F')" class="win-btn win-btn-num text-sm">F</button>
+            <button onclick="toggleSign()" class="win-btn win-btn-num">+/-</button>
+            <button data-key="0" onclick="inputDigit('0')" class="win-btn win-btn-num">0</button>
+            <button disabled class="win-btn win-btn-num">.</button>
+            <button data-key="Enter" onclick="evalProgEquals()" class="win-btn win-btn-accent">=</button>
+          </div>
+        `;
+      }
+    }
+
+    // ---------- History & Memory Panel ----------
+    function switchSideTab(tab) {
+      activeSideTab = tab;
+      const histTab = document.getElementById('side-tab-history');
+      const memTab = document.getElementById('side-tab-memory');
+      const histBox = document.getElementById('side-content-history');
+      const memBox = document.getElementById('side-content-memory');
+
+      if (tab === 'history') {
+        histTab.classList.add('active');
+        histTab.style.color = '';
+        memTab.classList.remove('active');
+        memTab.style.color = 'var(--text-secondary)';
+        histBox.classList.remove('hidden');
+        memBox.classList.add('hidden');
+      } else {
+        memTab.classList.add('active');
+        memTab.style.color = '';
+        histTab.classList.remove('active');
+        histTab.style.color = 'var(--text-secondary)';
+        memBox.classList.remove('hidden');
+        histBox.classList.add('hidden');
+      }
+    }
+
+    function toggleSidePanelMobile(forceTab) {
+      const panel = document.getElementById('side-panel');
+      if (forceTab) {
+        switchSideTab(forceTab);
+        panel.classList.remove('hidden');
+        panel.classList.add('fixed', 'inset-x-0', 'bottom-0', 'h-72', 'rounded-t-xl', 'shadow-2xl');
+        return;
+      }
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        panel.classList.add('fixed', 'inset-x-0', 'bottom-0', 'h-72', 'rounded-t-xl', 'shadow-2xl');
+      } else {
+        panel.classList.add('hidden');
+        panel.classList.remove('fixed', 'inset-x-0', 'bottom-0', 'h-72', 'rounded-t-xl', 'shadow-2xl');
+      }
+    }
+
+    function addHistoryItem(expr, formattedRes, rawRes) {
+      historyList.unshift({ expr, formattedRes, rawRes });
+      if (historyList.length > 50) historyList.pop();
+      renderHistoryList();
+    }
+
+    function renderHistoryList() {
+      const box = document.getElementById('side-content-history');
+      if (!historyList.length) {
+        box.innerHTML = `<p class="text-xs mt-2" style="color: var(--text-secondary);">There's no history yet.</p>`;
+        return;
+      }
+      box.innerHTML = historyList.map((item, idx) => `
+        <button onclick="recallHistory(${idx})" class="w-full text-right p-2 rounded fluent-icon-btn block">
+          <div class="text-xs truncate tabular" style="color: var(--text-secondary);">${item.expr}</div>
+          <div class="text-lg font-semibold truncate tabular mt-0.5">${item.formattedRes}</div>
+        </button>
+      `).join('');
+    }
+
+    function recallHistory(idx) {
+      const item = historyList[idx];
+      if (!item) return;
+      currentInput = item.rawRes;
+      expressionTokens = [item.expr];
+      waitingForOperand = true;
+      updateDisplay();
+    }
+
+    function updateMemoryButtonsState() {
+      const hasMem = memoryStack.length > 0;
+      document.getElementById('mem-mc').disabled = !hasMem;
+      document.getElementById('mem-mr').disabled = !hasMem;
+      document.getElementById('mem-m-flyout').disabled = !hasMem;
+      renderMemoryList();
+    }
+
+    function memStore() {
+      const val = parseFloat(currentInput);
+      if (isNaN(val)) return;
+      memoryStack.unshift(val);
+      waitingForOperand = true;
+      updateMemoryButtonsState();
+    }
+
+    function memRecall() {
+      if (!memoryStack.length) return;
+      currentInput = String(memoryStack[0]);
+      waitingForOperand = true;
+      updateDisplay();
+    }
+
+    function memClear() {
+      memoryStack = [];
+      updateMemoryButtonsState();
+    }
+
+    function memAdd() {
+      const val = parseFloat(currentInput) || 0;
+      if (!memoryStack.length) memoryStack.unshift(val);
+      else memoryStack[0] += val;
+      waitingForOperand = true;
+      updateMemoryButtonsState();
+    }
+
+    function memSub() {
+      const val = parseFloat(currentInput) || 0;
+      if (!memoryStack.length) memoryStack.unshift(-val);
+      else memoryStack[0] -= val;
+      waitingForOperand = true;
+      updateMemoryButtonsState();
+    }
+
+    function renderMemoryList() {
+      const box = document.getElementById('side-content-memory');
+      if (!memoryStack.length) {
+        box.innerHTML = `<p class="text-xs mt-2" style="color: var(--text-secondary);">There's nothing saved in memory.</p>`;
+        return;
+      }
+      box.innerHTML = memoryStack.map((val, idx) => `
+        <div class="p-2 rounded fluent-icon-btn text-right group">
+          <div onclick="recallMemIndex(${idx})" class="text-lg font-semibold tabular cursor-pointer">${formatNumberDisplay(String(val))}</div>
+          <div class="flex justify-end gap-1 mt-1">
+            <button onclick="clearMemIndex(${idx})" class="px-1.5 py-0.5 text-[11px] rounded win-btn-op">MC</button>
+            <button onclick="addMemIndex(${idx}, 1)" class="px-1.5 py-0.5 text-[11px] rounded win-btn-op">M+</button>
+            <button onclick="addMemIndex(${idx}, -1)" class="px-1.5 py-0.5 text-[11px] rounded win-btn-op">M-</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function recallMemIndex(i) {
+      currentInput = String(memoryStack[i]);
+      waitingForOperand = true;
+      updateDisplay();
+    }
+    function clearMemIndex(i) {
+      memoryStack.splice(i, 1);
+      updateMemoryButtonsState();
+    }
+    function addMemIndex(i, sign) {
+      const val = parseFloat(currentInput) || 0;
+      memoryStack[i] += sign * val;
+      renderMemoryList();
+    }
+
+    function clearSidePanelContent() {
+      if (activeSideTab === 'history') {
+        historyList = [];
+        renderHistoryList();
+      } else {
+        memClear();
+      }
+    }
+
+    // ---------- Date Calculation Mode ----------
+    function initDateMode() {
+      const today = new Date().toISOString().split('T')[0];
+      const f = document.getElementById('date-from');
+      const t = document.getElementById('date-to');
+      const b = document.getElementById('date-base');
+      if (!f.value) f.value = today;
+      if (!t.value) t.value = today;
+      if (!b.value) b.value = today;
+      calcDateDiff();
+      calcDateAddSub();
+    }
+
+    function switchDateSubmode(val) {
+      document.getElementById('date-sub-diff').classList.toggle('hidden', val !== 'diff');
+      document.getElementById('date-sub-addsub').classList.toggle('hidden', val !== 'addsub');
+    }
+
+    function calcDateDiff() {
+      const d1 = new Date(document.getElementById('date-from').value);
+      const d2 = new Date(document.getElementById('date-to').value);
+      if (isNaN(d1) || isNaN(d2)) return;
+
+      const ms = Math.abs(d2 - d1);
+      const totalDays = Math.round(ms / 86400000);
+      const weeks = Math.floor(totalDays / 7);
+      const remDays = totalDays % 7;
+
+      document.getElementById('date-diff-primary').textContent =
+        totalDays === 0 ? 'Same dates' :
+        weeks > 0 ? `${weeks} week${weeks > 1 ? 's' : ''}${remDays ? `, ${remDays} day${remDays > 1 ? 's' : ''}` : ''}` :
+        `${totalDays} day${totalDays > 1 ? 's' : ''}`;
+      document.getElementById('date-diff-days').textContent = `${totalDays.toLocaleString()} days`;
+    }
+
+    function calcDateAddSub() {
+      const base = new Date(document.getElementById('date-base').value);
+      if (isNaN(base)) return;
+      const op = document.querySelector('input[name="date-op"]:checked').value === 'add' ? 1 : -1;
+      const y = parseInt(document.getElementById('date-add-y').value) || 0;
+      const m = parseInt(document.getElementById('date-add-m').value) || 0;
+      const d = parseInt(document.getElementById('date-add-d').value) || 0;
+
+      const res = new Date(base);
+      res.setFullYear(res.getFullYear() + op * y);
+      res.setMonth(res.getMonth() + op * m);
+      res.setDate(res.getDate() + op * d);
+
+      document.getElementById('date-result-text').textContent = res.toLocaleDateString('en-US', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+
+    // ---------- Converter Mode ----------
+    function initConverterMode(cat) {
+      const cfg = UNIT_DATA[cat];
+      const s1 = document.getElementById('conv-unit-1');
+      const s2 = document.getElementById('conv-unit-2');
+      const keys = Object.keys(cfg.units);
+
+      s1.innerHTML = keys.map(k => `<option value="${k}">${cfg.units[k].name}</option>`).join('');
+      s2.innerHTML = keys.map(k => `<option value="${k}">${cfg.units[k].name}</option>`).join('');
+      if (keys.length > 1) s2.selectedIndex = 1;
+
+      convActiveField = 1;
+      convRawInput = '1';
+      setActiveConvField(1);
+      convertUnits();
+    }
+
+    function setActiveConvField(idx) {
+      convActiveField = idx;
+      const el1 = document.getElementById('conv-val-1');
+      const el2 = document.getElementById('conv-val-2');
+      if (idx === 1) {
+        el1.classList.add('font-semibold', 'border-l-2');
+        el1.style.borderColor = 'var(--active-pill)';
+        el1.style.color = 'var(--text-primary)';
+        el2.classList.remove('font-semibold', 'border-l-2');
+        el2.style.color = 'var(--text-secondary)';
+        convRawInput = el1.textContent.replace(/,/g, '');
+      } else {
+        el2.classList.add('font-semibold', 'border-l-2');
+        el2.style.borderColor = 'var(--active-pill)';
+        el2.style.color = 'var(--text-primary)';
+        el1.classList.remove('font-semibold', 'border-l-2');
+        el1.style.color = 'var(--text-secondary)';
+        convRawInput = el2.textContent.replace(/,/g, '');
+      }
+    }
+
+    function convInput(ch) {
+      if (ch === '.' && convRawInput.includes('.')) return;
+      if (convRawInput === '0' && ch !== '.') convRawInput = ch;
+      else convRawInput += ch;
+      convertUnits();
+    }
+
+    function convClear() {
+      convRawInput = '0';
+      convertUnits();
+    }
+
+    function convBackspace() {
+      convRawInput = convRawInput.length <= 1 ? '0' : convRawInput.slice(0, -1);
+      convertUnits();
+    }
+
+    function convNegate() {
+      if (currentMode !== 'temperature') return;
+      convRawInput = convRawInput.startsWith('-') ? convRawInput.slice(1) : '-' + convRawInput;
+      convertUnits();
+    }
+
+    function convSwapUnits() {
+      const s1 = document.getElementById('conv-unit-1');
+      const s2 = document.getElementById('conv-unit-2');
+      const tmp = s1.value;
+      s1.value = s2.value;
+      s2.value = tmp;
+      convertUnits();
+    }
+
+    function convertUnits() {
+      const cat = currentMode;
+      const cfg = UNIT_DATA[cat];
+      if (!cfg) return;
+
+      const uFrom = convActiveField === 1 ? document.getElementById('conv-unit-1').value : document.getElementById('conv-unit-2').value;
+      const uTo = convActiveField === 1 ? document.getElementById('conv-unit-2').value : document.getElementById('conv-unit-1').value;
+      const val = parseFloat(convRawInput) || 0;
+      let out = 0;
+
+      const rateBox = document.getElementById('conv-rate-box');
+      rateBox.classList.toggle('hidden', cat !== 'currency');
+
+      if (cat === 'temperature') {
+        let celsius = val;
+        if (uFrom === 'F') celsius = (val - 32) * (5 / 9);
+        else if (uFrom === 'K') celsius = val - 273.15;
+
+        if (uTo === 'C') out = celsius;
+        else if (uTo === 'F') out = celsius * (9 / 5) + 32;
+        else if (uTo === 'K') out = celsius + 273.15;
+      } else if (cat === 'currency') {
+        const r1 = cfg.units[uFrom].rate;
+        const r2 = cfg.units[uTo].rate;
+        out = (val / r1) * r2;
+        const unitRate = r2 / r1;
+        document.getElementById('conv-rate-label').textContent = `1 ${uFrom} = ${unitRate.toPrecision(5)} ${uTo}`;
+      } else {
+        const f1 = cfg.units[uFrom].factor;
+        const f2 = cfg.units[uTo].factor;
+        out = (val * f1) / f2;
+      }
+
+      const formattedOut = Number(out.toPrecision(10)).toLocaleString('en-US', { maximumFractionDigits: 8 });
+      const formattedIn = convRawInput.includes('.') ? convRawInput : Number(val).toLocaleString('en-US');
+
+      if (convActiveField === 1) {
+        document.getElementById('conv-val-1').textContent = formattedIn;
+        document.getElementById('conv-val-2').textContent = formattedOut;
+      } else {
+        document.getElementById('conv-val-2').textContent = formattedIn;
+        document.getElementById('conv-val-1').textContent = formattedOut;
+      }
+    }
+
+    function promptCustomRate() {
+      const u1 = document.getElementById('conv-unit-1').value;
+      const u2 = document.getElementById('conv-unit-2').value;
+      const curRate = (UNIT_DATA.currency.units[u2].rate / UNIT_DATA.currency.units[u1].rate).toPrecision(5);
+      // Inline prompt via custom mini input banner
+      const label = document.getElementById('conv-rate-label');
+      label.innerHTML = `1 ${u1} = <input id="inline-rate-inp" type="number" step="any" value="${curRate}" class="win-input w-24 py-0.5 px-1.5 text-xs" /> ${u2} <button onclick="applyInlineRate('${u1}','${u2}')" class="px-2 py-0.5 rounded win-btn-accent text-xs ml-1">Save</button>`;
+    }
+
+    function applyInlineRate(u1, u2) {
+      const newRate = parseFloat(document.getElementById('inline-rate-inp').value);
+      if (newRate > 0) {
+        UNIT_DATA.currency.units[u2].rate = UNIT_DATA.currency.units[u1].rate * newRate;
+        convertUnits();
+        showWinToast('Exchange rate updated');
+      }
+    }
+
+    // ---------- Physical Keyboard Support + Button Flash ----------
+    function flashButtonByKey(key) {
+      const btn = document.querySelector(`[data-key="${CSS.escape(key)}"]`);
+      if (!btn || btn.disabled) return;
+      btn.classList.add('kbd-active');
+      setTimeout(() => btn.classList.remove('kbd-active'), 110);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') return;
+
+      if (UNIT_DATA[currentMode]) {
+        if (/^[0-9.]$/.test(e.key)) { e.preventDefault(); convInput(e.key); }
+        else if (e.key === 'Backspace') { e.preventDefault(); convBackspace(); }
+        else if (e.key === 'Escape') { e.preventDefault(); convClear(); }
+        return;
+      }
+
+      if (currentMode === 'date') return;
+
+      const k = e.key;
+      if (/^[0-9]$/.test(k)) {
+        e.preventDefault();
+        flashButtonByKey(k);
+        inputDigit(k);
+      } else if (currentMode === 'programmer' && /^[a-fA-F]$/.test(k)) {
+        e.preventDefault();
+        inputDigit(k.toUpperCase());
+      } else if (k === '.') {
+        e.preventDefault();
+        flashButtonByKey('.');
+        inputDecimal();
+      } else if (k === '+') {
+        e.preventDefault();
+        flashButtonByKey('+');
+        handleOperator('+');
+      } else if (k === '-') {
+        e.preventDefault();
+        flashButtonByKey('-');
+        handleOperator('−');
+      } else if (k === '*') {
+        e.preventDefault();
+        flashButtonByKey('*');
+        handleOperator('×');
+      } else if (k === '/') {
+        e.preventDefault();
+        flashButtonByKey('/');
+        handleOperator('÷');
+      } else if (k === 'Enter' || k === '=') {
+        e.preventDefault();
+        flashButtonByKey('Enter');
+        evaluateEquals();
+      } else if (k === 'Backspace') {
+        e.preventDefault();
+        flashButtonByKey('Backspace');
+        backspace();
+      } else if (k === 'Escape') {
+        e.preventDefault();
+        flashButtonByKey('Escape');
+        clearAll();
+      } else if (k === 'Delete') {
+        e.preventDefault();
+        flashButtonByKey('Delete');
+        clearEntry();
+      } else if (k === '%') {
+        e.preventDefault();
+        flashButtonByKey('%');
+        applyUnary('%');
+      }
+    });
+
+    // ---------- Initialize ----------
+    window.onload = function () {
+      renderKeypad();
+      updateDisplay();
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>MOKAUS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="apple-touch-icon" sizes="180x180" href="ico/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="ico/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="ico/favicon-16x16.png">
+    <link rel="manifest" href="ico/site.webmanifest">
+</head>
+<body>
+
+    <div id="customCursor" class="custom-cursor"></div>
+
+    <div id="desktop" class="desktop">
+        <!-- Dynamic Node-Network Canvas Background -->
+        <canvas id="bg-canvas" aria-hidden="true"></canvas>
+
+        <!-- Desktop Icons -->
+                <div class="desktop-icons">
+            <a href="about.html" data-app="about" class="icon">
+                <div class="icon-image">🤖</div>
+                <span class="icon-label">About</span>
+            </a>
+            <a href="basics.html" data-app="basics" class="icon">
+                <div class="icon-image">🛸</div>
+                <span class="icon-label">Basics</span>
+            </a>
+            <a href="calc.html" data-app="calc" class="icon">
+                <div class="icon-image">📱</div>
+                <span class="icon-label">Calculator</span>
+            </a>
+            <a href="contact.html" data-app="contact" class="icon">
+                <div class="icon-image">📠</div>
+                <span class="icon-label">Contact</span>
+            </a>
+            <a href="games.html" data-app="games" class="icon">
+                <div class="icon-image">🎮</div>
+                <span class="icon-label">Games</span>
+            </a>
+            <a href="projects.html" data-app="projects" class="icon">
+                <div class="icon-image">🚀</div>
+                <span class="icon-label">Projects</span>
+            </a>
+            <a href="software.html" data-app="software" class="icon">
+                <div class="icon-image">💻</div>
+                <span class="icon-label">Software</span>
+            </a>
+            <a href="trades.html" data-app="trades" class="icon">
+                <div class="icon-image">📈</div>
+                <span class="icon-label">Trades</span>
+            </a>
+            <a href="vip.html" data-app="vip" class="icon">
+                <div class="icon-image">💎</div>
+                <span class="icon-label">VIP</span>
+            </a>
+        </div>
+
+        <!-- Multi-Window Container -->
+        <div id="windowsContainer"></div>
+
+        <!-- Taskbar -->
+        <div class="taskbar">
+            <div class="taskbar-left">
+                <button id="startButton" class="start-button">START</button>
+                <div id="startMenu" class="start-menu hidden">
+                    <div class="start-header"><div class="start-user">👽 ▾admin@mokaus</div></div>
+                    <div class="start-items">
+                        <a href="about.html" data-app="about" class="start-item"><span class="start-icon">🦝</span>About</a>
+                        <a href="basics.html" data-app="basics" class="start-item"><span class="start-icon">🎰</span>Basics</a>
+                        <a href="calc.html" data-app="calc" class="start-item"><span class="start-icon">⌨</span>Calculator</a>
+                        <a href="contact.html" data-app="contact" class="start-item"><span class="start-icon">🖨</span>Contact</a>
+						<a href="games.html" data-app="games" class="start-item"><span class="start-icon">🕹</span>Games</a>
+                        <a href="projects.html" data-app="projects" class="start-item"><span class="start-icon">📖</span>Projects</a>
+                        <a href="software.html" data-app="software" class="start-item"><span class="start-icon">💾</span>Software</a>
+                        <a href="trades.html" data-app="trades" class="start-item"><span class="start-icon">🎲</span>Trades</a>
+                        <a href="vip.html" data-app="vip" class="start-item"><span class="start-icon">🛫</span>VIP</a>
+                    </div>
+                    <div class="start-footer" style="border-top: 1px solid #374151; padding-top: 0.5rem; margin-top: 0.25rem;">
+                        <a href="index.html" class="start-item"><span class="start-icon">⚙️</span>RESTART ↻</a>
+                    </div>
+                </div>
+                <div id="taskbarItems" class="taskbar-items"></div>
+            </div>
+
+            <div class="taskbar-right">
+                <button id="networkToggle" class="tray-icon wifi-icon-btn" title="Connected: Wi-Fi Secure (Click for Public IP)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+                </button>
+				
+				<button id="audioToggle" class="tray-icon" title="Toggle Audio">🔊</button>
+
+                <div class="language-selector">
+                    <button id="langBtn" class="lang-btn" title="Keyboard Layout / Language">
+                        <span id="currentLangDisplay">EN</span> ▾
+                    </button>
+                    <div id="langDropdown" class="lang-dropdown hidden">
+                        <div class="lang-option active" data-lang="EN"><span>English (EN)</span></div>
+                        <div class="lang-option" data-lang="LT"><span>Lietuvių (LT)</span></div>
+                        <div class="lang-option" data-lang="RU"><span>Русский (RU)</span></div>
+                    </div>
+                </div>
+                
+                <div id="calendarDropdown" class="calendar-dropdown hidden">
+                    <div class="calendar-header">
+                        <div class="month-year"></div>
+                        <button class="close-calendar" onclick="document.getElementById('calendarDropdown').classList.add('hidden')">✕</button>
+                    </div>
+                    <div id="calendarDaysHeader" class="days-of-week"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+                    <div class="calendar-dates"></div>
+                </div>
+                
+                <div id="taskbarTimeContainer" class="taskbar-time" title="Click to open calendar">
+                    <div id="currentTime" class="time"></div>
+                    <div id="currentDate" class="date"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Notification -->
+        <div id="notification" class="notification hidden">
+            <div class="notification-header">
+                <span>System Notification</span>
+                <button class="notification-close" onclick="hideNotification()">×</button>
+            </div>
+            <div id="notificationMessage" class="notification-message"></div>
+        </div>
+        <!-- System Audio Elements -->
+        <audio id="audioConnect" src="media/connect.mp3" preload="auto"></audio>
+        <audio id="audioClick" src="media/click.mp3" preload="auto"></audio>
+        <audio id="audioSpeaker" src="media/speaker.mp3" preload="auto"></audio>
+    </div>
+
+    <script src="desktop-os.js?v=11"></script>
+</body>
+</html>
